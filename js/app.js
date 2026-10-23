@@ -1,126 +1,125 @@
 var NAI_CONFIG={
-CA:"",
+CA:"TBA",
 BUY_URL:"",
 CHAIN:"solana",
 PAIR:"",
-X_URL:"https://x.com/altaiusmax_x",
-TG_URL:"https://t.me/altaiumax_tg",
+X_URL:"https://x.com/stanleycat_x",
 REFRESH_SECONDS:60,
 ROTATE_SECONDS:7,
 HERO_VIDEO:""
 };
 
 var NAI_VIDEOS=[
-{img:"imagery/scenes/hero.webp",cat:"story",tag:"Banner",tz:"横幅",date:"Wide arena",dz:"宽幅竞技场",title:"Altaius stands before the arena",z:"阿尔泰乌斯站在竞技场前"},
-{img:"imagery/scenes/mark.webp",cat:"story",tag:"Logo",tz:"标志",date:"Close view",dz:"近景",title:"The same tiger, held in a square",z:"同一只虎，收进方图"},
-{img:"imagery/memes/2.webp",cat:"still",tag:"Still",tz:"静帧",date:"The chain",dz:"链上",title:"On Solana",z:"登陆 Solana"},
-{img:"imagery/memes/3.webp",cat:"still",tag:"Still",tz:"静帧",date:"The gold",dz:"金光",title:"He stands in the gold",z:"他站在金光里"},
-{img:"imagery/memes/4.webp",cat:"meme",tag:"Meme",tz:"海报",date:"The name",dz:"名字",title:"Altaius Maximus",z:"阿尔泰乌斯·马克西穆斯"},
-{img:"imagery/memes/1.webp",cat:"meme",tag:"Meme",tz:"海报",date:"The plume",dz:"红羽",title:"The red plume",z:"红羽盔"},
-{img:"imagery/memes/6.webp",cat:"story",tag:"Banner",tz:"横幅",date:"Wide arena",dz:"宽幅竞技场",title:"The wide arena",z:"宽阔的竞技场"},
-{img:"imagery/memes/5.webp",cat:"still",tag:"Still",tz:"静帧",date:"The mark",dz:"标记",title:"Altaius, close",z:"阿尔泰乌斯，近景"}
+{img:"imagery/scenes/hero.webp",cat:"story",tag:"Banner",tz:"横幅",date:"The board",dz:"社区板",title:"Stanley on the community board",z:"斯坦利在社区板上"},
+{img:"imagery/scenes/mark.webp",cat:"story",tag:"Logo",tz:"标志",date:"The stretch",dz:"伸展",title:"The same cat, held in a square",z:"同一只猫，收进方图"},
+{img:"imagery/memes/2.webp",cat:"still",tag:"Still",tz:"静帧",date:"Two poses",dz:"两个姿势",title:"The stretch and the sit",z:"伸展和坐下"},
+{img:"imagery/memes/3.webp",cat:"still",tag:"Still",tz:"静帧",date:"The labels",dz:"标注",title:"Orange back, long paw, the look",z:"橙背，长爪，那一眼"},
+{img:"imagery/memes/4.webp",cat:"meme",tag:"Meme",tz:"海报",date:"The faces",dz:"几张脸",title:"Look, stretch, tap",z:"看，伸展，水龙头"},
+{img:"imagery/memes/1.webp",cat:"meme",tag:"Meme",tz:"海报",date:"The name",dz:"名字",title:"Stanley the Cat",z:"斯坦利猫"},
+{img:"imagery/memes/6.webp",cat:"story",tag:"Banner",tz:"横幅",date:"The board",dz:"社区板",title:"The wide board",z:"宽阔的社区板"},
+{img:"imagery/memes/5.webp",cat:"still",tag:"Still",tz:"静帧",date:"The mark",dz:"标记",title:"Stanley, close",z:"斯坦利，近景"}
 ];
 
 var NAI_ZH={
-"g1":"以<em>金</em>为记。",
-"g2":"阿尔泰乌斯的标记，是金甲上的红羽。剑上写着 SPQR，盾心是狮首，身后是竞技场。方图是近景，横幅是远景。",
+"g1":"以<em>橙</em>为记。",
+"g2":"斯坦利的标记，是白胸口上的橙背。一只爪子伸长，伸展保持着，身后是沙发。方图是这个姿势，横幅是这块板。",
 "g3":"交易池上线后，合约地址会显示在本页。兑换前请先核对。",
 "g4":"看横幅",
 "g5":"如何购买",
 "g6":"链",
 "g7":"代币符号",
-"g8":"竞技场",
+"g8":"沙发",
 "g9":"栖处",
-"g10":"羽盔",
+"g10":"毛色",
 "dx1":"有交易池后显示行情",
 "tg1":"海报",
 "tg2":"看海报",
-"s1":"竞技场",
-"s2":"红羽",
-"t0":"<span>阿尔泰乌斯·马克西穆斯站在竞技场前</span> <a href=\"#sky\">看横幅</a>",
-"t1":"<span>$Altaius 是这只虎在 Solana 上的社区币</span> <a href=\"#buy\">如何购买</a>",
-"t2":"<span>一张标志，一条横幅，一顶红羽盔</span> <a href=\"#numbers\">看标记</a>",
+"s1":"沙发",
+"s2":"橙色",
+"t0":"<span>斯坦利猫保持着伸展的姿势</span> <a href=\"#sky\">看横幅</a>",
+"t1":"<span>$STANLEY 是这只猫在 Solana 上的社区币</span> <a href=\"#buy\">如何购买</a>",
+"t2":"<span>一张标志，一条横幅，一块橙色板</span> <a href=\"#numbers\">看标记</a>",
 "t3":"来历",
 "t4":"标记",
 "t5":"行情",
 "t6":"画面",
 "t7":"海报",
-"t8":"买入 $Altaius",
+"t8":"买入 $STANLEY",
 "t9":"<svg><use href=\"#i-out\"/></svg>看横幅",
 "t10":"已登陆 Solana",
-"t11":"<span class=\"badge badge--lg\">$Altaius</span><span class=\"hero__tagtext\">红羽盔下的<br>那只虎</span>",
-"t12":"阿尔泰乌斯·马克西穆斯站在竞技场前，剑向前，盾上是狮首，红披风被风拉开。这张图就是标记。$Altaius 把它带到 Solana。",
+"t11":"<span class=\"badge badge--lg\">$STANLEY</span><span class=\"hero__tagtext\">伸展姿势里的<br>那只猫</span>",
+"t12":"斯坦利猫在地毯上保持伸展：一只前爪伸长，橙色的背拱起，白胸口朝前。标志就是这个姿势。横幅把同一只猫排在橙色的社区板上。$STANLEY 把它带到 Solana。",
 "t13":"<svg><use href=\"#i-chart\"/></svg>看行情",
 "t14":"栖处",
 "t15":"链",
 "t16":"看来历",
-"t17":"<b>横幅</b><span>宽阔竞技场里的阿尔泰乌斯</span>",
+"t17":"<b>横幅</b><span>橙色板上的斯坦利</span>",
 "t18":"Solana",
 "t19":"价格",
 "t20":"市值",
 "t21":"24 小时成交额",
 "t22":"流动性",
-"t23":"从竞技场，到链上。",
-"t24":"一只虎。一顶<em>红羽</em>。",
-"t25":"现已登陆 Solana <span class=\"badge badge--md\">$Altaius</span>",
+"t23":"从地毯，到链上。",
+"t24":"一只猫。一个<em>伸展</em>。",
+"t25":"现已登陆 Solana <span class=\"badge badge--md\">$STANLEY</span>",
 "t26":"看看它的来历",
-"t27":"金甲里握着剑的<em>虎</em>。",
+"t27":"一只把前爪伸长的<em>猫</em>。",
 "t28":"这张图就是全部故事。",
-"t29":"阿尔泰乌斯·马克西穆斯站在斗兽场前。红羽盔，金甲，剑上写着 SPQR，盾心是一头狮子，披风是深红。方图是近景，宽横幅把同一只虎周围的竞技场拉开。$Altaius 是这个标记在 Solana 上的社区币。",
+"t29":"斯坦利猫背上是橙色，胸口是白色。标志里，他在沙发前的地毯上保持伸展：背拱起，一只前爪伸长，脸转向外侧。宽横幅把这个姿势放进圆框，又把同一只猫的照片排在写着 STANLEY THE CAT 和 COMMUNITY 的橙色板周围。$STANLEY 是这个标记在 Solana 上的社区币。",
 "t30":"名字",
 "t32":"符号",
-"t33":"竞技场",
+"t33":"沙发",
 "t34":"栖处",
 "t35":"链",
-"t37":"看宽阔的竞技场",
-"t38":"这只虎是怎么有了<em>符号</em>。",
+"t37":"看宽阔的社区板",
+"t38":"这只猫是怎么有了<em>符号</em>。",
 "t39":"从标志和横幅上读出来。这里没有借来的数字。",
-"t40":"站姿",
-"t42":"一只虎",
-"t43":"他不坐下。他站着，剑向前，视线平直向外。",
+"t40":"姿势",
+"t42":"一只猫",
+"t43":"他不是端正地坐着。他伸展开，一只爪子伸长，视线向外。",
 "t44":"标志",
 "t44b":"横幅",
-"t45":"羽盔",
-"t46":"红",
-"t47":"在他头顶",
-"t48":"金色头盔上是一簇高高的红羽。两张图上的标记是同一个。",
-"t49":"剑与盾",
-"t50":"剑上是 SPQR，盾上是狮首。方图和宽竞技场里是同一张脸。",
-"t51":"兵器",
-"t52":"金",
+"t45":"毛色",
+"t46":"橙",
+"t47":"在他身上",
+"t48":"背是橙色，脸和胸口是白色。两张图上的标记是同一个。",
+"t49":"一只爪子",
+"t50":"前爪伸出去，背保持弓起。方图和圆框里是同一只猫。",
+"t51":"姿势",
+"t52":"长",
 "t53":"全名与短名",
-"t54":"全名是 Altaius Maximus。$Altaius 是短名，刚好能做代币符号。",
+"t54":"板上的名字是 Stanley the Cat。$STANLEY 是短名，刚好能做代币符号。",
 "t55":"名字",
-"t57":"一张近，一张远。虎没有变。",
+"t57":"一个姿势，一块板。猫没有变。",
 "t58":"图画",
-"t59":"给金甲里那只虎的社区币。交易池上线后，合约会显示在这里。",
+"t59":"给伸展姿势里那只猫的社区币。交易池上线后，合约会显示在这里。",
 "t60":"标志与横幅",
 "t61":"代币",
-"t62":"竞技场",
+"t62":"社区板",
 "t62b":"来历 · 第二章",
-"t63":"同一只虎。<em>更大的竞技场</em>。",
-"t64":"横幅把镜头拉远。阿尔泰乌斯变小了，斗兽场更宽，披风还在风里。",
+"t63":"同一只猫。<em>更大的板</em>。",
+"t64":"横幅把这一组打开。斯坦利留在圆框里，周围每张照片都是同一只猫。",
 "t65":"横幅上",
-"t66":"&ldquo;他走进金光里，举起了剑。&rdquo;",
-"t67":"标志是近景。横幅是远景。同一张脸，同一顶羽盔，同一面盾。$Altaius 是这两张图的符号。",
+"t66":"&ldquo;他在地毯上伸展开，把姿势保持住。&rdquo;",
+"t67":"标志是伸展。横幅是这块板。同一张脸，同一块橙背，同一只长爪子。$STANLEY 是这两张图的符号。",
 "t68":"画面",
 "t69":"横幅",
 "t70":"兵器",
-"t71":"剑与盾",
+"t71":"伸展",
 "t72":"栖处",
-"t73":"竞技场",
+"t73":"沙发",
 "t74":"链",
 "t76":"看来历",
 "t78":"名字",
 "t79":"符号",
-"t80":"羽盔",
+"t80":"毛色",
 "t81":"图画",
 "t82":"链",
 "t83":"代币",
-"t84":"$Altaius <em>实时</em>行情。",
+"t84":"$STANLEY <em>实时</em>行情。",
 "t85":"<svg><use href=\"#i-copy\"/></svg>复制合约",
 "t86":"还没有交易池",
-"t87":"$Altaius 有了实时池子后，行情会显示在这里",
+"t87":"$STANLEY 有了实时池子后，行情会显示在这里",
 "t89":"24 小时交易笔数",
 "t90":"已交易天数",
 "t91":"如何<em>购买</em>",
@@ -131,14 +130,14 @@ var NAI_ZH={
 "t96":"充值 SOL",
 "t97":"在交易所买入 SOL，提到你的 Solana 钱包。SOL 同时用来支付网络手续费。",
 "t98":"第 3 步",
-"t99":"打开 $Altaius",
+"t99":"打开 $STANLEY",
 "t100":"打开购买链接，核对合约地址和本页显示的一致。",
 "t101":"第 4 步",
 "t102":"兑换",
 "t103":"输入 SOL 数量，看好报价，在钱包里确认交易。",
 "t104":"正在看 <span id=\"playerTag\"></span>",
 "t105":"画面与海报",
-"t106":"阿尔泰乌斯的<em>画面</em>。",
+"t106":"斯坦利的<em>画面</em>。",
 "t107":"图片",
 "t108":"全部",
 "t109":"故事",
@@ -146,27 +145,27 @@ var NAI_ZH={
 "t111":"海报",
 "t112":"全部海报",
 "t113":"从标记<em>做出来</em>的。",
-"t113b":"来自标记的海报",
+"t113b":"从标记做出来的图",
 "t114":"社区",
-"t115":"加入 $Altaius <em>这边</em>。",
-"t116":"图画和符号在这个页面上。更新发在 X 和 Telegram。",
+"t115":"加入 $STANLEY <em>这边</em>。",
+"t116":"图画和符号在这个页面上。更新发在 X。",
 "t117":"看来历",
-"t122":"Solana 上阿尔泰乌斯·马克西穆斯的社区币。",
+"t122":"Solana 上斯坦利猫的社区币。",
 "t123":"导航",
 "t124":"代币",
 "t125":"如何购买",
-"t128":"$Altaius 是标志和横幅里那只虎的独立社区 meme 币。它与 Solana Labs、任何竞技场或其他品牌都没有关联。本站任何内容都不构成投资建议，加密资产存在风险。",
+"t128":"$STANLEY 是标志和横幅里那只猫的独立社区 meme 币。它与 Solana Labs 或其他品牌都没有关联。本站任何内容都不构成投资建议，加密资产存在风险。",
 "t129":"隐私说明：本站不使用 Cookie，也没有账户系统。只有在设置了合约之后，才会从 Dexscreener 加载行情，从 GeckoTerminal 加载图表。字体来自 Google Fonts。你的语言选择只保存在你自己的浏览器里。",
 "t130":"<svg><use href=\"#i-save\"/></svg>保存海报"
 };
 
 var NAI_MEMES=[
-{file:"1",w:1080,h:1080,tw:640,alt:"Altaius Maximus beside ALTAIUS, $Altaius, and MAXIMUS"},
-{file:"2",w:1280,h:720,tw:1138,alt:"Altaius Maximus in the arena with the words On Solana"},
-{file:"3",w:1152,h:864,tw:853,alt:"Close view of Altaius Maximus with the words He stands in the gold"},
-{file:"4",w:864,h:1152,tw:480,alt:"Altaius Maximus above the words ALTAIUS MAXIMUS and $Altaius"},
-{file:"5",w:1000,h:1000,tw:640,alt:"Altaius Maximus from the logo, with ALTAIUS and $Altaius"},
-{file:"6",w:1400,h:788,tw:1137,alt:"The wide banner of Altaius Maximus, titled The wide arena"}
+{file:"1",w:1080,h:1080,tw:640,alt:"Stanley the Cat in the stretch, captioned STANLEY and THE CAT"},
+{file:"2",w:1280,h:720,tw:1138,alt:"Stanley the Cat in the stretch beside the sit, labeled THE STRETCH and THE SIT"},
+{file:"3",w:1152,h:864,tw:853,alt:"Stanley the Cat labeled orange back, long paw, and the look"},
+{file:"4",w:864,h:1152,tw:480,alt:"Three photos of Stanley the Cat labeled the look, the stretch, and the tap"},
+{file:"5",w:1000,h:1000,tw:640,alt:"Stanley the Cat in an orange circle with STANLEY THE CAT and $STANLEY"},
+{file:"6",w:1400,h:788,tw:1138,alt:"Four photos of Stanley the Cat from the banner, labeled look, soap, up, and tap"}
 ];
 
 (function(){
@@ -182,6 +181,7 @@ function vMeta(v,sep){return LANG==="zh"?v.tz+" · "+v.dz:v.tag+sep+v.date}
 var CA=(C.CA||"").trim();
 function isAddr(s){return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s)}
 var hasCA=isAddr(CA);
+var showCA=!!CA;
 var chartUrl="";
 
 var toast=$("toast");
@@ -193,7 +193,7 @@ clearTimeout(toastTimer);
 toastTimer=setTimeout(function(){toast.classList.remove("show")},2200);
 }
 function copyCA(){
-if(!hasCA)return;
+if(!showCA)return;
 var done=function(){showToast(L("Contract address copied","合约地址已复制"))};
 if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(CA).then(done,done);return}
 var ta=doc.createElement("textarea");
@@ -204,11 +204,16 @@ doc.body.removeChild(ta);done();
 }
 
 function setupToken(){
-all("[data-ca-only]").forEach(function(el){el.hidden=!hasCA});
-if(!hasCA)return;
-all("[data-ca-short]").forEach(function(el){el.textContent=CA.slice(0,6)+"..."+CA.slice(-4)});
+all("[data-ca-only]").forEach(function(el){
+if(el.hasAttribute("data-chart")||el.hasAttribute("data-scan")){el.hidden=!hasCA;return}
+el.hidden=!showCA;
+});
+if(!showCA)return;
+var short=hasCA?CA.slice(0,6)+"..."+CA.slice(-4):CA;
+all("[data-ca-short]").forEach(function(el){el.textContent=short});
 all("[data-ca-full]").forEach(function(el){el.textContent=CA});
 all("[data-copy]").forEach(function(b){b.addEventListener("click",copyCA)});
+if(!hasCA)return;
 var buy=C.BUY_URL||("https://jup.ag/swap/SOL-"+CA);
 all("[data-buy]").forEach(function(a){a.href=buy;a.target="_blank";a.rel="noopener"});
 all("[data-scan]").forEach(function(a){a.href="https://solscan.io/token/"+CA;a.target="_blank";a.rel="noopener"});
@@ -264,7 +269,7 @@ if(chartMounted||!pair)return;
 chartMounted=true;
 var box=$("chart");
 var f=doc.createElement("iframe");
-f.title="$Altaius live chart";
+f.title="$STANLEY live chart";
 f.src="https://www.geckoterminal.com/"+C.CHAIN+"/pools/"+pair+"?embed=1&info=0&swaps=0&grayscale=0&light_chart=1&chart_type=price&resolution=15m";
 f.setAttribute("allow","clipboard-write");
 f.addEventListener("load",function(){box.setAttribute("data-mode","live")});
@@ -289,7 +294,7 @@ var trades=tx?(Number(tx.buys)||0)+(Number(tx.sells)||0):0;
 setM("trades",trades>0?trades.toLocaleString("en-US"):"--");
 var made=Number(p.pairCreatedAt);
 if(isFinite(made)&&made>0)setM("age",String(Math.max(1,Math.floor((Date.now()-made)/864e5))));
-if(p.quoteToken&&p.quoteToken.symbol)setM("pair","$Altaius / "+p.quoteToken.symbol);
+if(p.quoteToken&&p.quoteToken.symbol)setM("pair","$STANLEY / "+p.quoteToken.symbol);
 var gold=p.quoteToken&&/^XAU/i.test(p.quoteToken.symbol||"");
 var gq=Number(p.liquidity&&p.liquidity.quote);
 if(gold&&isFinite(gq)&&gq>0)setM("gold",gq.toFixed(2)+" XAUt");
@@ -402,7 +407,7 @@ if(reduce||heroIframe||!C.HERO_VIDEO)return;
 var f=doc.createElement("iframe");
 var origin=location.origin&&location.origin.indexOf("http")===0?"&origin="+encodeURIComponent(location.origin):"";
 f.src="https://www.youtube-nocookie.com/embed/"+C.HERO_VIDEO+"?autoplay=1&mute=1&loop=1&playlist="+C.HERO_VIDEO+"&controls=0&rel=0&playsinline=1&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&enablejsapi=1"+origin;
-f.title="Altaius Maximus";
+f.title="Stanley the Cat";
 f.setAttribute("allow","autoplay; encrypted-media; picture-in-picture");
 f.setAttribute("referrerpolicy","strict-origin-when-cross-origin");
 f.setAttribute("tabindex","-1");
@@ -459,7 +464,7 @@ var m=NAI_MEMES[lbIndex];
 var src="imagery/memes/"+m.file+".webp";
 lbImg.src=src;lbImg.alt=m.alt;
 $("lbSave").href=src;
-$("lbSave").setAttribute("download","altaius-"+m.file+".webp");
+$("lbSave").setAttribute("download","stanley-"+m.file+".webp");
 }
 function openLightbox(i,from){lbReturn=from;showMeme(i);lightbox.hidden=false;$("lbClose").focus()}
 all("[data-meme]").forEach(function(b){b.addEventListener("click",function(){var f=b.getAttribute("data-meme");for(var i=0;i<NAI_MEMES.length;i++){if(NAI_MEMES[i].file===f){openLightbox(i,b);return}}})});
@@ -489,7 +494,7 @@ if(el.enHTML==null)el.enHTML=el.innerHTML;
 var k=el.getAttribute("data-i18n");
 el.innerHTML=zh&&NAI_ZH[k]!=null?NAI_ZH[k]:el.enHTML;
 });
-doc.title=zh?"阿尔泰乌斯 ALTAIUS | $Altaius 登陆 Solana":titleEn;
+doc.title=zh?"斯坦利 STANLEY | $STANLEY 登陆 Solana":titleEn;
 if(zh&&!zhFont){zhFont=true;var lk=doc.createElement("link");lk.rel="stylesheet";lk.href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap";doc.head.appendChild(lk)}
 setText("langMain",zh?"翻译":"Translate");
 setText("langSub",zh?"Switch to English":"切换到中文");
@@ -504,11 +509,11 @@ if(cur){setText("playerTitle",vTitle(cur));setText("playerTag",vMeta(cur,", "));
 var vis=visibleVids(),pos=vis.indexOf(vidIndex);setText("vidCount",(pos<0?1:pos+1)+" / "+vis.length);
 setSound(heroMuted);
 loadMarket();
-try{localStorage.setItem("altaius_lang",LANG)}catch(e){}
+try{localStorage.setItem("stanley_lang",LANG)}catch(e){}
 }
 function setupLang(){
 var saved=null;
-try{saved=localStorage.getItem("altaius_lang")}catch(e){}
+try{saved=localStorage.getItem("stanley_lang")}catch(e){}
 var nav=(navigator.language||"").toLowerCase();
 var start=saved==="zh"||saved==="en"?saved:(nav.indexOf("zh")===0?"zh":"en");
 var lb=$("langBtn");
@@ -532,9 +537,7 @@ items.forEach(function(el){io.observe(el)});
 
 function setupSocial(){
 var x=(C.X_URL||"").trim();
-var tg=(C.TG_URL||"").trim();
 if(x)all("[data-x]").forEach(function(a){a.href=x;a.target="_blank";a.rel="noopener"});
-if(tg)all("[data-tg]").forEach(function(a){a.href=tg;a.target="_blank";a.rel="noopener"});
 }
 setupSocial();
 setupToken();

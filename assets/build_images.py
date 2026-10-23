@@ -1,70 +1,125 @@
-"""Build Altaius site images from the logo, banner, and keyed cutouts."""
+"""Build Stanley site images from the logo and the banner.
+
+Memes are photo types (caption, split, labels, comic, badge, film strip),
+not the polka-dot poster set this page used before.
+"""
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 import numpy as np
+import cv2
 import os
 
-ROOT = r"E:\pack\solana\Altai"
+ROOT = r"E:\pack\solana\STANLEY"
 FONT = os.path.join(ROOT, "assets", "LilitaOne-Regular.ttf")
-SRC_LOGO = os.path.join(ROOT, "logo-1.png")
-SRC_BANNER = os.path.join(ROOT, "banner-1.png")
-HEAD = r"C:\Users\Alita\.cursor\projects\e-pack-solana-Altai\assets\altaius-head.jpg"
-BODY = r"C:\Users\Alita\.cursor\projects\e-pack-solana-Altai\assets\altaius-body.jpg"
-SHIELD = r"C:\Users\Alita\.cursor\projects\e-pack-solana-Altai\assets\altaius-shield.jpg"
+SRC_LOGO = os.path.join(ROOT, "logo.png")
+SRC_BANNER = os.path.join(ROOT, "banner.png")
 
 INK = (27, 31, 75, 255)
 YELLOW = (255, 210, 31, 255)
 PINK = (255, 45, 149, 255)
 PAPER = (251, 247, 239, 255)
 WHITE = (255, 255, 255, 255)
+ORANGE = (255, 186, 83, 255)
+BLACK = (8, 8, 12, 255)
+
+# Banner panels, inset so the orange-board lettering stays out of the photos.
+BOX = {
+    "look": (4, 4, 284, 250),
+    "soap": (4, 260, 284, 496),
+    "rear": (294, 4, 505, 250),
+    "sit": (294, 260, 462, 496),
+    "up": (972, 6, 1216, 250),
+    "blep": (1042, 262, 1216, 494),
+    "tap": (1228, 4, 1496, 250),
+    "chin": (1228, 260, 1496, 496),
+}
 
 
 def font(size):
     return ImageFont.truetype(FONT, size)
 
 
-def key_green(path):
-    im = Image.open(path).convert("RGB")
-    arr = np.asarray(im).astype(np.int16)
-    r, g, b = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2]
-    score = np.minimum(g - r, g - b)
-    greenish = (g > 80) & (g > r + 18) & (g > b + 18)
-    # 0 = fully green background, 255 = subject
-    alpha = np.where(greenish, np.clip((70 - score) * (255.0 / 36.0), 0, 255), 255).astype(np.uint8)
-    # despill green fringe on the subject edge
-    edge = greenish | ((g > r + 8) & (g > b + 8) & (g > 60))
-    g2 = g.copy()
-    cap = np.maximum(r, b)
-    g2 = np.where(edge & (g2 > cap), cap, g2)
-    out = np.dstack([
-        np.clip(r, 0, 255).astype(np.uint8),
-        np.clip(g2, 0, 255).astype(np.uint8),
-        np.clip(b, 0, 255).astype(np.uint8),
-        alpha,
-    ])
-    im = Image.fromarray(out, "RGBA")
-    # soften the matte a touch so jpeg fringe does not sparkle
-    a = im.split()[-1].filter(ImageFilter.GaussianBlur(0.6))
-    im.putalpha(a)
-    return im
+def text_size(draw, text, fnt, sw=0):
+    box = draw.textbbox((0, 0), text, font=fnt, stroke_width=sw)
+    return box[2] - box[0], box[3] - box[1], box
 
 
-def trim(im, pad=8):
+def stamp(draw, xy, text, fnt, fill, stroke=BLACK, sw=8):
+    draw.text(xy, text, font=fnt, fill=fill, stroke_width=sw, stroke_fill=stroke)
+
+
+def stamp_center(draw, y, text, fnt, width, fill, stroke=BLACK, sw=8):
+    tw, th, box = text_size(draw, text, fnt, sw)
+    x = (width - tw) // 2 - box[0]
+    stamp(draw, (x, y - box[1]), text, fnt, fill, stroke, sw)
+    return th
+
+
+def banner_word(base, xy, text, fnt, fill=YELLOW, sw=10, shift=(7, 7)):
+    """Yellow word with the hard offset shadow used on the banner."""
+    draw = ImageDraw.Draw(base)
+    x, y = xy
+    draw.text((x + shift[0], y + shift[1]), text, font=fnt, fill=(55, 42, 20, 255))
+    draw.text((x, y), text, font=fnt, fill=fill, stroke_width=sw, stroke_fill=INK)
+    return base
+
+
+def banner_word_center(base, y, text, fnt, fill=YELLOW, sw=10, shift=(7, 7)):
+    draw = ImageDraw.Draw(base)
+    tw, th, box = text_size(draw, text, fnt, sw)
+    x = (base.width - tw) // 2 - box[0]
+    banner_word(base, (x, y), text, fnt, fill, sw, shift)
+    return th
+
+
+def save_webp(im, path, quality=86):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    if im.mode == "RGBA":
+        im.save(path, "WEBP", quality=quality, method=6)
+    else:
+        im.convert("RGB").save(path, "WEBP", quality=quality, method=6)
+
+
+def cover(im, w, h, focus=(0.5, 0.45)):
+    im = im.convert("RGB")
+    ratio = max(w / im.width, h / im.height)
+    nw, nh = max(1, int(im.width * ratio)), max(1, int(im.height * ratio))
+    im = im.resize((nw, nh), Image.Resampling.LANCZOS)
+    x = int((nw - w) * focus[0])
+    y = int((nh - h) * focus[1])
+    x = max(0, min(nw - w, x))
+    y = max(0, min(nh - h, y))
+    return im.crop((x, y, x + w, y + h))
+
+
+def contain_pad(im, w, h, bg=(255, 176, 70)):
+    im = im.convert("RGB")
+    ratio = min(w / im.width, h / im.height)
+    nw, nh = int(im.width * ratio), int(im.height * ratio)
+    fitted = im.resize((nw, nh), Image.Resampling.LANCZOS)
+    blur = im.resize((w, h), Image.Resampling.LANCZOS).filter(ImageFilter.GaussianBlur(22))
+    overlay = Image.new("RGB", (w, h), bg)
+    blur = Image.blend(blur, overlay, 0.28)
+    blur.paste(fitted, ((w - nw) // 2, (h - nh) // 2))
+    return blur
+
+
+def trim(im, pad=6):
     bbox = im.split()[-1].getbbox()
     if not bbox:
         return im
     x0, y0, x1, y1 = bbox
-    x0 = max(0, x0 - pad)
-    y0 = max(0, y0 - pad)
-    x1 = min(im.width, x1 + pad)
-    y1 = min(im.height, y1 + pad)
-    return im.crop((x0, y0, x1, y1))
+    return im.crop((
+        max(0, x0 - pad),
+        max(0, y0 - pad),
+        min(im.width, x1 + pad),
+        min(im.height, y1 + pad),
+    ))
 
 
 def fit(im, w, h, scale=0.92, valign="center"):
     im = trim(im, 4)
     canvas = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    max_w = int(w * scale)
-    max_h = int(h * scale)
+    max_w, max_h = int(w * scale), int(h * scale)
     ratio = min(max_w / im.width, max_h / im.height)
     nw, nh = max(1, int(im.width * ratio)), max(1, int(im.height * ratio))
     resized = im.resize((nw, nh), Image.Resampling.LANCZOS)
@@ -79,36 +134,214 @@ def fit(im, w, h, scale=0.92, valign="center"):
     return canvas
 
 
-def save_webp(im, path, quality=86):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    im.save(path, "WEBP", quality=quality, method=6)
+def grab_alpha(rgb, rect=None):
+    bgr = cv2.cvtColor(np.array(rgb.convert("RGB")), cv2.COLOR_RGB2BGR)
+    h, w = bgr.shape[:2]
+    mask = np.zeros((h, w), np.uint8)
+    bgd = np.zeros((1, 65), np.float64)
+    fgd = np.zeros((1, 65), np.float64)
+    if rect is None:
+        m = max(2, int(min(h, w) * 0.02))
+        rect = (m, m, w - 2 * m, h - 2 * m)
+    cv2.grabCut(bgr, mask, rect, bgd, fgd, 6, cv2.GC_INIT_WITH_RECT)
+    alpha = np.where((mask == 1) | (mask == 3), 255, 0).astype(np.uint8)
+    ff = alpha.copy()
+    flood = np.zeros((h + 2, w + 2), np.uint8)
+    cv2.floodFill(ff, flood, (0, 0), 255)
+    alpha = cv2.bitwise_or(alpha, cv2.bitwise_not(ff))
+    n, labels, stats, _ = cv2.connectedComponentsWithStats((alpha > 20).astype(np.uint8), 8)
+    if n > 1:
+        keep = 1 + int(np.argmax(stats[1:, cv2.CC_STAT_AREA]))
+        alpha = np.where(labels == keep, alpha, 0).astype(np.uint8)
+    alpha = cv2.GaussianBlur(alpha, (3, 3), 0)
+    rgba = rgb.convert("RGBA")
+    rgba.putalpha(Image.fromarray(alpha))
+    return rgba
 
 
-def cover(im, w, h, focus=(0.5, 0.42)):
-    im = im.convert("RGB")
-    ratio = max(w / im.width, h / im.height)
-    nw, nh = int(im.width * ratio), int(im.height * ratio)
-    im = im.resize((nw, nh), Image.Resampling.LANCZOS)
-    x = int((nw - w) * focus[0])
-    y = int((nh - h) * focus[1])
-    x = max(0, min(nw - w, x))
-    y = max(0, min(nh - h, y))
-    return im.crop((x, y, x + w, y + h))
+def shade_bars(im, top=180, bot=210, strength=200):
+    im = im.convert("RGBA")
+    h, w = im.size
+    overlay = Image.new("RGBA", im.size, (0, 0, 0, 0))
+    px = overlay.load()
+    for i in range(top):
+        a = int(strength * (1 - i / top) ** 1.35)
+        for x in range(w):
+            px[x, i] = (0, 0, 0, a)
+    for i in range(bot):
+        a = int(strength * (1 - i / bot) ** 1.15)
+        y = h - 1 - i
+        for x in range(w):
+            px[x, y] = (0, 0, 0, a)
+    return Image.alpha_composite(im, overlay)
 
 
-def contain_pad(im, w, h, bg=(18, 12, 8)):
-    """Fit a wide banner into a taller frame without cutting the tiger."""
-    im = im.convert("RGB")
-    ratio = min(w / im.width, h / im.height)
-    nw, nh = int(im.width * ratio), int(im.height * ratio)
-    fitted = im.resize((nw, nh), Image.Resampling.LANCZOS)
-    blur = im.resize((w, h), Image.Resampling.LANCZOS).filter(ImageFilter.GaussianBlur(18))
-    overlay = Image.new("RGB", (w, h), bg)
-    blur = Image.blend(blur, overlay, 0.35)
-    x = (w - nw) // 2
-    y = (h - nh) // 2
-    blur.paste(fitted, (x, y))
+def circle_photo(im, size):
+    tile = cover(im, size, size, (0.48, 0.46)).convert("RGBA")
+    mask = Image.new("L", (size, size), 0)
+    ImageDraw.Draw(mask).ellipse((0, 0, size - 1, size - 1), fill=255)
+    tile.putalpha(mask)
+    return tile
+
+
+def panel(banner, name):
+    return banner.crop(BOX[name])
+
+
+def meme_caption(logo):
+    """Classic top-and-bottom caption meme."""
+    im = shade_bars(cover(logo, 1080, 1080, (0.5, 0.46)), 200, 230, 210)
+    d = ImageDraw.Draw(im)
+    stamp_center(d, 48, "STANLEY", font(108), 1080, WHITE, sw=14)
+    stamp_center(d, 900, "THE CAT", font(96), 1080, WHITE, sw=13)
+    stamp_center(d, 1010, "$STANLEY", font(40), 1080, YELLOW, sw=6)
+    return im.convert("RGB")
+
+
+def meme_split(logo, sit):
+    """Two-panel comparison."""
+    w, h = 1280, 720
+    gap = 10
+    left_w = (w - gap) // 2
+    im = Image.new("RGB", (w, h), (27, 31, 75))
+    im.paste(cover(logo, left_w, h, (0.48, 0.42)), (0, 0))
+    im.paste(cover(sit, w - left_w - gap, h, (0.42, 0.42)), (left_w + gap, 0))
+    im = im.convert("RGBA")
+    bar = Image.new("RGBA", im.size, (0, 0, 0, 0))
+    bd = ImageDraw.Draw(bar)
+    bd.rounded_rectangle((28, 620, 360, 688), radius=18, fill=(8, 8, 12, 210))
+    bd.rounded_rectangle((w - 360, 620, w - 28, 688), radius=18, fill=(8, 8, 12, 210))
+    bd.rounded_rectangle((w // 2 - 150, 24, w // 2 + 150, 92), radius=18, fill=(255, 210, 31, 245))
+    im = Image.alpha_composite(im, bar)
+    d = ImageDraw.Draw(im)
+    stamp_center_in(d, 28, 360, 632, "THE STRETCH", font(36), WHITE, sw=0)
+    stamp_center_in(d, w - 360, w - 28, 632, "THE SIT", font(36), WHITE, sw=0)
+    stamp_center_in(d, w // 2 - 150, w // 2 + 150, 36, "$STANLEY", font(40), INK, sw=0)
+    return im.convert("RGB")
+
+
+def stamp_center_in(draw, x0, x1, y, text, fnt, fill, stroke=BLACK, sw=0):
+    tw, th, box = text_size(draw, text, fnt, sw)
+    x = x0 + (x1 - x0 - tw) // 2 - box[0]
+    stamp(draw, (x, y - box[1]), text, fnt, fill, stroke, sw)
+
+
+def meme_labels(logo):
+    """Callout meme: three labels on the stretch."""
+    im = cover(logo, 1152, 864, (0.5, 0.48)).convert("RGBA")
+    overlay = Image.new("RGBA", im.size, (0, 0, 0, 0))
+    d = ImageDraw.Draw(overlay)
+    # leader lines land on the back, the face, and the long paw
+    calls = [
+        ((70, 70, 430, 150), (340, 250), "ORANGE BACK"),
+        ((700, 70, 1080, 150), (1000, 360), "THE LOOK"),
+        ((620, 690, 1100, 770), (980, 800), "LONG PAW"),
+    ]
+    for (x0, y0, x1, y1), (tx, ty), label in calls:
+        ax, ay = (x0 + x1) // 2, (y0 + y1) // 2
+        if ty > y1:
+            ay = y1
+        elif ty < y0:
+            ay = y0
+        d.line(((ax, ay), (tx, ty)), fill=(255, 255, 255, 230), width=6)
+        d.ellipse((tx - 8, ty - 8, tx + 8, ty + 8), fill=YELLOW)
+        d.rounded_rectangle((x0, y0, x1, y1), radius=16, fill=(8, 8, 12, 220))
+    im = Image.alpha_composite(im, overlay)
+    d = ImageDraw.Draw(im)
+    stamp_center_in(d, 70, 430, 86, "ORANGE BACK", font(36), YELLOW, sw=0)
+    stamp_center_in(d, 700, 1080, 86, "THE LOOK", font(36), YELLOW, sw=0)
+    stamp_center_in(d, 620, 1100, 706, "LONG PAW", font(36), YELLOW, sw=0)
+    return im.convert("RGB")
+
+
+def frame_photo(src, w, h):
+    """Show the whole photo, with a blurred fill behind portrait frames."""
+    src = src.convert("RGB")
+    ratio = min(w / src.width, h / src.height)
+    nw, nh = max(1, int(src.width * ratio)), max(1, int(src.height * ratio))
+    fitted = src.resize((nw, nh), Image.Resampling.LANCZOS)
+    blur = cover(src, w, h, (0.5, 0.5)).filter(ImageFilter.GaussianBlur(14))
+    dim = Image.new("RGB", (w, h), (12, 14, 28))
+    blur = Image.blend(blur, dim, 0.35)
+    blur.paste(fitted, ((w - nw) // 2, (h - nh) // 2))
     return blur
+
+
+def meme_comic(look, logo, tap):
+    """Three-panel vertical comic."""
+    w, h = 864, 1152
+    im = Image.new("RGB", (w, h), (27, 31, 75))
+    panels = [
+        (look, "THE LOOK"),
+        (logo, "THE STRETCH"),
+        (tap, "THE TAP"),
+    ]
+    ph = 340
+    gap = 8
+    for i, (src, label) in enumerate(panels):
+        y = 16 + i * (ph + gap)
+        tile = frame_photo(src, w - 32, ph - 64)
+        im.paste(tile, (16, y))
+        d = ImageDraw.Draw(im)
+        d.rectangle((16, y + ph - 64, w - 16, y + ph), fill=(8, 8, 12))
+        stamp_center_in(d, 16, w - 16, y + ph - 52, label, font(36), YELLOW, sw=0)
+    d = ImageDraw.Draw(im)
+    stamp_center(d, 1068, "$STANLEY", font(48), w, YELLOW, sw=0)
+    return im.convert("RGB")
+
+
+def meme_badge(logo):
+    """Orange circle card, the banner's own type, as a square."""
+    w = h = 1000
+    im = Image.new("RGBA", (w, h), ORANGE)
+    banner_word_center(im, 36, "STANLEY", font(108), sw=12, shift=(8, 8))
+    banner_word_center(im, 160, "THE CAT", font(64), sw=8, shift=(6, 6))
+    circ = circle_photo(logo, 520)
+    ring = Image.new("RGBA", im.size, (0, 0, 0, 0))
+    rd = ImageDraw.Draw(ring)
+    cx, cy = w // 2, 530
+    rd.ellipse((cx - 276, cy - 276, cx + 276, cy + 276), fill=INK)
+    im = Image.alpha_composite(im, ring)
+    im.paste(circ, (cx - 260, cy - 260), circ)
+    banner_word_center(im, 860, "$STANLEY", font(72), sw=9, shift=(6, 6))
+    return im.convert("RGB")
+
+
+def meme_film(look, soap, up, tap):
+    """Four-frame film strip from the banner photos."""
+    w, h = 1400, 788
+    im = Image.new("RGBA", (w, h), PAPER)
+    d = ImageDraw.Draw(im)
+    d.rectangle((0, 0, w, 118), fill=ORANGE)
+    banner_word(im, (36, 22), "THE BOARD", font(58), sw=8, shift=(5, 5))
+    banner_word(im, (980, 28), "$STANLEY", font(48), sw=7, shift=(5, 5))
+    frames = [
+        (look, "LOOK", (0.5, 0.42)),
+        (soap, "SOAP", (0.5, 0.45)),
+        (up, "UP", (0.5, 0.48)),
+        (tap, "TAP", (0.5, 0.4)),
+    ]
+    fw, fh = 300, 500
+    gap = 28
+    total = 4 * fw + 3 * gap
+    x = (w - total) // 2
+    y = 160
+    for src, label, focus in frames:
+        d = ImageDraw.Draw(im)
+        d.rounded_rectangle((x - 6, y - 6, x + fw + 6, y + fh + 6), radius=18, fill=INK)
+        tile = cover(src, fw, fh - 70, focus).convert("RGBA")
+        mask = Image.new("L", tile.size, 0)
+        ImageDraw.Draw(mask).rounded_rectangle((0, 0, fw, fh - 70), radius=12, fill=255)
+        tile.putalpha(mask)
+        im.paste(tile, (x, y), tile)
+        d = ImageDraw.Draw(im)
+        stamp_center_in(d, x, x + fw, y + fh - 58, label, font(36), YELLOW, sw=0)
+        x += fw + gap
+    return im.convert("RGB")
+
+
+def thumb_for(im, tw, th):
+    return cover(im, tw, th, (0.5, 0.42))
 
 
 def draw_solana(size):
@@ -128,197 +361,82 @@ def draw_solana(size):
     return img
 
 
-def text_size(draw, text, fnt):
-    box = draw.textbbox((0, 0), text, font=fnt)
-    return box[2] - box[0], box[3] - box[1], box
-
-
-def stamp(draw, xy, text, fnt, fill, stroke=INK, sw=10, shadow=None):
-    x, y = xy
-    if shadow:
-        draw.text((x + shadow[0], y + shadow[1]), text, font=fnt, fill=shadow[2])
-    draw.text((x, y), text, font=fnt, fill=fill, stroke_width=sw, stroke_fill=stroke)
-
-
-def dots(base, step=22, radius=2.2, color=(255, 45, 149, 90), box=None):
-    overlay = Image.new("RGBA", base.size, (0, 0, 0, 0))
-    d = ImageDraw.Draw(overlay)
-    x0, y0, x1, y1 = box or (0, 0, base.width, base.height)
-    y = y0 + 10
-    while y < y1:
-        x = x0 + 10
-        while x < x1:
-            d.ellipse((x - radius, y - radius, x + radius, y + radius), fill=color)
-            x += step
-        y += step
-    return Image.alpha_composite(base, overlay)
-
-
-def rounded_paste(base, im, box, radius=36, shadow=(10, 10, PINK)):
-    x, y, w, h = box
-    if shadow:
-        sh = Image.new("RGBA", base.size, (0, 0, 0, 0))
-        sd = ImageDraw.Draw(sh)
-        sd.rounded_rectangle((x + shadow[0], y + shadow[1], x + w + shadow[0], y + h + shadow[1]), radius=radius, fill=shadow[2])
-        base = Image.alpha_composite(base, sh)
-    tile = cover(im, w, h).convert("RGBA")
-    mask = Image.new("L", (w, h), 0)
-    ImageDraw.Draw(mask).rounded_rectangle((0, 0, w, h), radius=radius, fill=255)
+def oval_face(im, size=640, focus=(0.5, 0.45)):
+    tile = cover(im, size, size, focus).convert("RGBA")
+    mask = Image.new("L", (size, size), 0)
+    ImageDraw.Draw(mask).ellipse((18, 18, size - 19, size - 19), fill=255)
+    mask = mask.filter(ImageFilter.GaussianBlur(4))
     tile.putalpha(mask)
-    base.paste(tile, (x, y), tile)
-    return base
+    return tile
 
 
-def meme_square():
-    w = h = 1080
-    im = Image.new("RGBA", (w, h), PAPER)
-    im = dots(im, step=26, radius=3, color=(255, 45, 149, 110), box=(0, 0, 560, h))
-    logo = Image.open(SRC_LOGO)
-    im = rounded_paste(im, logo, (500, 90, 500, 900), radius=48, shadow=(16, 16, PINK))
-    d = ImageDraw.Draw(im)
-    stamp(d, (48, 250), "ALTAIUS", font(92), YELLOW, sw=12, shadow=(8, 8, PINK))
-    stamp(d, (48, 390), "$Altaius", font(78), YELLOW, sw=10, shadow=(7, 7, PINK))
-    stamp(d, (48, 540), "MAXIMUS", font(54), PINK, stroke=INK, sw=8)
-    return im.convert("RGB")
+def oval_tall(im, w=520, h=760, focus=(0.5, 0.45)):
+    canvas = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    side = int(min(w, h) * 0.92)
+    face = oval_face(im, side, focus)
+    canvas.paste(face, ((w - side) // 2, (h - side) // 2), face)
+    return canvas
 
 
-def meme_wide_chain():
-    banner = Image.open(SRC_BANNER).convert("RGBA")
-    im = banner.resize((1280, 720), Image.Resampling.LANCZOS)
-    bar = Image.new("RGBA", im.size, (0, 0, 0, 0))
-    bd = ImageDraw.Draw(bar)
-    bd.rounded_rectangle((36, 580, 520, 684), radius=22, fill=(27, 31, 75, 230))
-    im = Image.alpha_composite(im, bar)
-    d = ImageDraw.Draw(im)
-    stamp(d, (58, 598), "ON SOLANA", font(48), YELLOW, sw=0)
-    return im.convert("RGB")
-
-
-def meme_gold():
-    logo = cover(Image.open(SRC_LOGO), 1152, 864, focus=(0.48, 0.42)).convert("RGBA")
-    bar = Image.new("RGBA", logo.size, (0, 0, 0, 0))
-    bd = ImageDraw.Draw(bar)
-    bd.rectangle((0, 700, 1152, 864), fill=(27, 31, 75, 220))
-    im = Image.alpha_composite(logo, bar)
-    d = ImageDraw.Draw(im)
-    stamp(d, (48, 730), "HE STANDS", font(62), YELLOW, sw=0)
-    stamp(d, (48, 798), "IN THE GOLD", font(42), WHITE, sw=0)
-    return im.convert("RGB")
-
-
-def meme_portrait():
-    w, h = 864, 1152
-    im = Image.new("RGBA", (w, h), PAPER)
-    im = dots(im, step=24, radius=2.6, color=(255, 45, 149, 100))
-    head = trim(key_green(HEAD), 2)
-    arr = np.array(head)
-    start = int(arr.shape[0] * 0.82)
-    ramp = np.linspace(1, 0, arr.shape[0] - start)
-    arr[start:, :, 3] = (arr[start:, :, 3].astype(np.float32) * ramp[:, None]).astype(np.uint8)
-    head = Image.fromarray(arr, "RGBA")
-    ratio = min(760 / head.width, 780 / head.height)
-    nw, nh = int(head.width * ratio), int(head.height * ratio)
-    head = head.resize((nw, nh), Image.Resampling.LANCZOS)
-    im.paste(head, ((w - nw) // 2, 20), head)
-    d = ImageDraw.Draw(im)
-    stamp(d, (40, 900), "ALTAIUS", font(78), YELLOW, sw=10, shadow=(7, 7, PINK))
-    stamp(d, (40, 990), "MAXIMUS", font(64), YELLOW, sw=9, shadow=(6, 6, PINK))
-    stamp(d, (40, 1072), "$Altaius", font(42), PINK, stroke=INK, sw=6)
-    return im.convert("RGB")
-
-
-def meme_mark():
-    w = h = 1000
-    im = Image.new("RGBA", (w, h), PAPER)
-    im = dots(im, step=28, radius=3, color=(255, 45, 149, 80))
-    logo = Image.open(SRC_LOGO)
-    im = rounded_paste(im, logo, (150, 40, 700, 700), radius=40, shadow=(14, 14, PINK))
-    d = ImageDraw.Draw(im)
-    stamp(d, (48, 800), "ALTAIUS", font(86), YELLOW, sw=11, shadow=(8, 8, PINK))
-    stamp(d, (48, 900), "$Altaius", font(52), INK, stroke=YELLOW, sw=6)
-    return im.convert("RGB")
-
-
-def meme_arena():
-    banner = Image.open(SRC_BANNER).convert("RGB")
-    im = cover(banner, 1400, 788, focus=(0.5, 0.45)).convert("RGBA")
-    bar = Image.new("RGBA", im.size, (0, 0, 0, 0))
-    bd = ImageDraw.Draw(bar)
-    bd.rounded_rectangle((36, 36, 620, 150), radius=24, fill=(27, 31, 75, 225))
-    im = Image.alpha_composite(im, bar)
-    d = ImageDraw.Draw(im)
-    stamp(d, (58, 52), "THE WIDE ARENA", font(42), YELLOW, sw=0)
-    stamp(d, (58, 100), "$Altaius", font(32), WHITE, sw=0)
-    return im.convert("RGB")
-
-
-def thumb_for(im, tw, th):
-    return cover(im, tw, th, focus=(0.5, 0.4))
+def on_orange(im, w=640, h=480):
+    bg = Image.new("RGBA", (w, h), ORANGE)
+    fitted = fit(im, w, h, 0.9, "center")
+    bg.paste(fitted, (0, 0), fitted)
+    return bg.convert("RGB")
 
 
 def main():
     logo = Image.open(SRC_LOGO).convert("RGB")
     banner = Image.open(SRC_BANNER).convert("RGB")
+    shots = {name: panel(banner, name) for name in BOX}
 
-    save_webp(logo.resize((512, 512), Image.Resampling.LANCZOS), os.path.join(ROOT, "imagery", "brand", "logo.webp"), 90)
-    logo.resize((512, 512), Image.Resampling.LANCZOS).save(os.path.join(ROOT, "imagery", "brand", "icon-512.png"), "PNG")
-    logo.resize((192, 192), Image.Resampling.LANCZOS).save(os.path.join(ROOT, "imagery", "brand", "icon-192.png"), "PNG")
-    logo.resize((180, 180), Image.Resampling.LANCZOS).save(os.path.join(ROOT, "imagery", "brand", "apple-touch-icon.png"), "PNG")
-    logo.resize((32, 32), Image.Resampling.LANCZOS).save(os.path.join(ROOT, "imagery", "brand", "favicon-32.png"), "PNG")
-    ico = logo.resize((256, 256), Image.Resampling.LANCZOS)
-    ico.save(os.path.join(ROOT, "favicon.ico"), sizes=[(16, 16), (32, 32), (48, 48), (64, 64)])
+    brand = os.path.join(ROOT, "imagery", "brand")
+    save_webp(logo.resize((512, 512), Image.Resampling.LANCZOS), os.path.join(brand, "logo.webp"), 90)
+    logo.resize((512, 512), Image.Resampling.LANCZOS).save(os.path.join(brand, "icon-512.png"), "PNG")
+    logo.resize((192, 192), Image.Resampling.LANCZOS).save(os.path.join(brand, "icon-192.png"), "PNG")
+    logo.resize((180, 180), Image.Resampling.LANCZOS).save(os.path.join(brand, "apple-touch-icon.png"), "PNG")
+    logo.resize((32, 32), Image.Resampling.LANCZOS).save(os.path.join(brand, "favicon-32.png"), "PNG")
+    logo.resize((256, 256), Image.Resampling.LANCZOS).save(
+        os.path.join(ROOT, "favicon.ico"), sizes=[(16, 16), (32, 32), (48, 48), (64, 64)]
+    )
+    contain_pad(banner, 1200, 630).save(os.path.join(brand, "og.jpg"), "JPEG", quality=88, optimize=True)
+    save_webp(draw_solana(256), os.path.join(brand, "sol.webp"), 90)
 
-    og = contain_pad(banner, 1200, 630)
-    og.save(os.path.join(ROOT, "imagery", "brand", "og.jpg"), "JPEG", quality=88, optimize=True)
+    scenes = os.path.join(ROOT, "imagery", "scenes")
+    save_webp(banner, os.path.join(scenes, "hero.webp"), 86)
+    save_webp(logo.resize((500, 500), Image.Resampling.LANCZOS), os.path.join(scenes, "mark.webp"), 88)
+    save_webp(banner, os.path.join(scenes, "season2.webp"), 86)
 
-    sol = draw_solana(256)
-    save_webp(sol, os.path.join(ROOT, "imagery", "brand", "sol.webp"), 90)
-
-    save_webp(banner, os.path.join(ROOT, "imagery", "scenes", "hero.webp"), 86)
-    save_webp(logo.resize((500, 500), Image.Resampling.LANCZOS), os.path.join(ROOT, "imagery", "scenes", "mark.webp"), 88)
-    save_webp(banner, os.path.join(ROOT, "imagery", "scenes", "season2.webp"), 86)
-
-    head = key_green(HEAD)
-    body = key_green(BODY)
-    shield = key_green(SHIELD)
-
-    head_fit = fit(head, 584, 819, 0.96)
-    body_fit = fit(body, 405, 740, 0.98, valign="end")
-    shield_sq = fit(shield, 640, 640, 0.94)
-    head_sq = fit(head, 640, 640, 0.96)
+    stretch = grab_alpha(logo, (24, 64, 452, 420))
 
     altai = os.path.join(ROOT, "imagery", "altai")
-    save_webp(head_fit, os.path.join(altai, "head.webp"))
-    save_webp(head_fit, os.path.join(altai, "love.webp"))
-    save_webp(head_fit, os.path.join(altai, "x.webp"))
-    save_webp(body_fit, os.path.join(altai, "body.webp"))
-    save_webp(body_fit, os.path.join(altai, "sit.webp"))
-    save_webp(body_fit, os.path.join(altai, "dex.webp"))
-    save_webp(shield_sq, os.path.join(altai, "x-bite.webp"))
-    save_webp(head_sq, os.path.join(altai, "dex-bite.webp"))
-
+    pieces = {
+        "head": oval_tall(shots["look"], focus=(0.48, 0.46)),
+        "love": oval_tall(shots["blep"], focus=(0.4, 0.55)),
+        "x": oval_tall(shots["up"], focus=(0.55, 0.5)),
+        "body": fit(stretch, 520, 740, 0.98, "end"),
+        "sit": fit(stretch, 480, 740, 0.96, "end"),
+        "dex": fit(stretch, 480, 740, 0.96, "end"),
+        "x-bite": fit(stretch, 640, 640, 0.92),
+        "dex-bite": oval_face(shots["look"], 640, (0.5, 0.45)),
+    }
+    for name, im in pieces.items():
+        save_webp(im, os.path.join(altai, name + ".webp"))
     nail = os.path.join(ROOT, "imagery", "nailoong")
-    for name in ("head", "love", "x", "body", "sit", "dex", "x-bite", "dex-bite"):
-        src = os.path.join(altai, name + ".webp")
-        dst = os.path.join(nail, name + ".webp")
-        Image.open(src).save(dst, "WEBP", quality=86, method=6)
+    for name in pieces:
+        Image.open(os.path.join(altai, name + ".webp")).save(
+            os.path.join(nail, name + ".webp"), "WEBP", quality=86, method=6
+        )
 
     memes = {
-        1: meme_square(),
-        2: meme_wide_chain(),
-        3: meme_gold(),
-        4: meme_portrait(),
-        5: meme_mark(),
-        6: meme_arena(),
+        1: meme_caption(logo),
+        2: meme_split(logo, shots["sit"]),
+        3: meme_labels(logo),
+        4: meme_comic(shots["look"], logo, shots["tap"]),
+        5: meme_badge(logo),
+        6: meme_film(shots["look"], shots["soap"], shots["up"], shots["tap"]),
     }
-    thumbs = {
-        1: (640, 640),
-        2: (720, 405),
-        3: (720, 540),
-        4: (480, 640),
-        5: (640, 640),
-        6: (720, 405),
-    }
+    thumbs = {1: (640, 640), 2: (1138, 640), 3: (853, 640), 4: (480, 640), 5: (640, 640), 6: (1138, 640)}
     meme_dir = os.path.join(ROOT, "imagery", "memes")
     thumb_dir = os.path.join(meme_dir, "thumbs")
     cycle = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 1, 8: 2, 9: 3, 10: 4, 11: 5, 12: 6, 13: 1, 14: 2, 15: 3, 16: 4, 17: 5, 18: 6, 19: 1, 20: 2}
@@ -328,16 +446,11 @@ def main():
         tw, th = thumbs[src_n]
         save_webp(thumb_for(img, tw, th), os.path.join(thumb_dir, f"{n}.webp"), 80)
 
-    # preview cutouts on the site orange so edges can be checked
-    prev = Image.new("RGBA", (900, 740), (255, 122, 44, 255))
-    b = fit(body, 360, 700, 0.98)
-    h = fit(head, 280, 400, 0.96)
-    prev.paste(b, (20, 20), b)
-    prev.paste(h, (420, 40), h)
-    prev.convert("RGB").save(os.path.join(ROOT, "assets", "preview-cutouts.jpg"), "JPEG", quality=88)
-    memes[1].save(os.path.join(ROOT, "assets", "preview-meme1.jpg"), "JPEG", quality=88)
-    memes[4].save(os.path.join(ROOT, "assets", "preview-meme4.jpg"), "JPEG", quality=88)
-    print("done")
+    prev = os.path.join(ROOT, "assets")
+    on_orange(stretch, 900, 520).save(os.path.join(prev, "preview-cutouts.jpg"), "JPEG", quality=88)
+    memes[1].save(os.path.join(prev, "preview-meme1.jpg"), "JPEG", quality=88)
+    memes[4].save(os.path.join(prev, "preview-meme4.jpg"), "JPEG", quality=88)
+    print("done", {k: v.size for k, v in memes.items()})
 
 
 if __name__ == "__main__":
